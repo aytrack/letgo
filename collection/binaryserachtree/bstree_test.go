@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestBSTree_PreOrder(t *testing.T) {
+func TestBSTree(t *testing.T) {
 	bst := NewBSTree()
 
 	v0 := bst.Find(1)
@@ -17,28 +17,38 @@ func TestBSTree_PreOrder(t *testing.T) {
 		t.Errorf("Empty tree level travel failed.")
 	}
 
-	bst.Add(3, "a")
-	bst.Add(2, "b")
-	bst.Add(5, "c")
-	bst.Add(1, "d")
-	bst.Add(4, "e")
+	bst.InsertRecur(3, "a")
+	bst.InsertRecur(2, "b")
+	bst.InsertRecur(5, "c")
+	bst.Insert(1, "d")
+	bst.Insert(4, "e")
 
 	preExcept := []Entry{{3, "a"}, {2, "b"}, {1, "d"}, {5, "c"}, {4, "e"}}
 	inExcept := []Entry{{1, "d"}, {2, "b"}, {3, "a"}, {4, "e"}, {5, "c"}}
 	postExcept := []Entry{{1, "d"}, {2, "b"}, {4, "e"}, {5, "c"}, {3, "a"}}
 	levelExcept := []Entry{{3, "a"}, {2, "b"}, {5, "c"}, {1, "d"}, {4, "e"}}
 
-	preOrderv := bst.Order("s")
+	preOrderv := bst.OrderRecur("s")
 	if !compareList(preExcept, preOrderv) {
 		t.Errorf("Default order is %v != %v", preOrderv, preExcept)
 	}
 
-	preOrderv = bst.Order("pre")
+	preOrderv = bst.OrderRecur("pre")
+	if !compareList(preExcept, preOrderv) {
+		t.Errorf("PreOrderRecur is %v != %v", preOrderv, preExcept)
+	}
+
+	preOrderv = bst.PreOrder()
 	if !compareList(preExcept, preOrderv) {
 		t.Errorf("PreOrder is %v != %v", preOrderv, preExcept)
 	}
 
-	inOrderv := bst.Order("in")
+	inOrderv := bst.OrderRecur("in")
+	if !compareList(inExcept, inOrderv) {
+		t.Errorf("InOrderRecur is %v != %v", inOrderv, inExcept)
+	}
+
+	inOrderv = bst.InOrder()
 	if !compareList(inExcept, inOrderv) {
 		t.Errorf("InOrder is %v != %v", inOrderv, inExcept)
 	}
@@ -48,7 +58,7 @@ func TestBSTree_PreOrder(t *testing.T) {
 		t.Errorf("LevelOrder is %v != %v", levelOrderv, levelExcept)
 	}
 
-	postOrderv := bst.Order("post")
+	postOrderv := bst.OrderRecur("post")
 	if !compareList(postExcept, postOrderv) {
 		t.Errorf("PostOrder is %v != %v", postOrderv, postExcept)
 	}

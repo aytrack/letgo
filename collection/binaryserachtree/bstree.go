@@ -23,8 +23,24 @@ type MyQueue struct {
 	List *list.List
 }
 
+type MyStack struct {
+	List *list.List
+}
+
 func NewBSTree() *BSTree {
 	return &BSTree{}
+}
+
+func (s *MyStack) Push(v interface{}) {
+	s.List.PushBack(v)
+}
+
+func (s *MyStack) Pop() interface{} {
+	if elem := s.List.Back(); elem != nil {
+		s.List.Remove(elem)
+		return elem.Value
+	}
+	return nil
 }
 
 func (q *MyQueue) Push(v interface{}) {
@@ -39,13 +55,38 @@ func (q *MyQueue) Pop() interface{} {
 	return nil
 }
 
-func (bst *BSTree) Add(key int64, value interface{}) {
+func (bst *BSTree) InsertRecur(key int64, value interface{}) {
 	if bst.root == nil {
 		bst.root = &TreeNode{data: &Entry{key, value}}
 	} else {
 		bst.root.insert(key, value)
 	}
 	bst.size++
+}
+
+func (bst *BSTree) Insert(key int64, value interface{}) {
+	newNode := &TreeNode{data: &Entry{key: key, value: value}}
+	if bst.root == nil {
+		bst.root = newNode
+		return
+	}
+	p := bst.root
+	for p != nil {
+		if key > p.data.key {
+			if p.right == nil {
+				p.right = newNode
+				return
+			}
+			p = p.right
+		}
+		if key < p.data.key {
+			if p.left == nil {
+				p.left = newNode
+				return
+			}
+			p = p.left
+		}
+	}
 }
 
 func (bst *BSTree) Find(key int64) *Entry {
@@ -63,7 +104,7 @@ func (bst *BSTree) Find(key int64) *Entry {
 	}
 }
 
-func (bst *BSTree) Order(order string) []Entry {
+func (bst *BSTree) OrderRecur(order string) []Entry {
 	var result []Entry
 	switch order {
 	case "pre":
@@ -74,6 +115,43 @@ func (bst *BSTree) Order(order string) []Entry {
 		bst.root.postOrder(&result)
 	default:
 		bst.root.preOrder(&result)
+	}
+	return result
+}
+
+func (bst *BSTree) PreOrder() []Entry {
+	var result []Entry
+	s := &MyStack{List: list.New()}
+	node := bst.root
+
+	for node != nil || s.List.Len() != 0 {
+		for node != nil {
+			result = append(result, *node.data)
+			s.Push(node)
+			node = node.left
+		}
+		if s.List.Len() != 0 {
+			node = s.Pop().(*TreeNode)
+			node = node.right
+		}
+	}
+	return result
+}
+
+func (bst *BSTree) InOrder() []Entry {
+	var result []Entry
+	s := &MyStack{list.New()}
+	node := bst.root
+	for node != nil || s.List.Len() != 0 {
+		for node != nil {
+			s.Push(node)
+			node = node.left
+		}
+		if s.List.Len() != 0 {
+			node = s.Pop().(*TreeNode)
+			result = append(result, *node.data)
+			node = node.right
+		}
 	}
 	return result
 }
