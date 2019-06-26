@@ -2,6 +2,7 @@ package binaryserachtree
 
 import (
 	"container/list"
+	"errors"
 )
 
 type BSTree struct {
@@ -70,21 +71,21 @@ func (bst *BSTree) Insert(key int64, value interface{}) {
 		bst.root = newNode
 		return
 	}
-	p := bst.root
-	for p != nil {
-		if key > p.data.key {
-			if p.right == nil {
-				p.right = newNode
+	node := bst.root
+	for node != nil {
+		if key > node.data.key {
+			if node.right == nil {
+				node.right = newNode
 				return
 			}
-			p = p.right
+			node = node.right
 		}
-		if key < p.data.key {
-			if p.left == nil {
-				p.left = newNode
+		if key < node.data.key {
+			if node.left == nil {
+				node.left = newNode
 				return
 			}
-			p = p.left
+			node = node.left
 		}
 	}
 }
@@ -156,6 +157,30 @@ func (bst *BSTree) InOrder() []Entry {
 	return result
 }
 
+func (bst *BSTree) PostOrder() []Entry {
+	s := &MyStack{List: list.New()}
+	node := bst.root
+	var prePop *TreeNode
+	var result []Entry
+	for (node != nil || s.List.Len() != 0) && prePop != bst.root {
+		for node != nil {
+			s.Push(node)
+			node = node.left
+		}
+		for s.List.Len() != 0 {
+			node = s.Pop().(*TreeNode)
+			if node.right == nil || node.right == prePop {
+				result = append(result, *node.data)
+				prePop = node
+			} else {
+				s.Push(node)
+				node = node.right
+				break
+			}
+		}
+	}
+	return result
+}
 func (bst *BSTree) LevelOrder() []Entry {
 	queue := MyQueue{list.New()}
 	var result []Entry
@@ -188,6 +213,55 @@ func (bst *BSTree) Max() *Entry {
 		node = node.right
 	}
 	return node.data
+}
+
+func (bst *BSTree) Delete(data *Entry) (bool, error) {
+	node := bst.root
+	var parentNode *TreeNode
+	for node != nil && node.data.key != data.key {
+		if node.data.key > data.key {
+			parentNode = node
+			node = node.left
+		}
+		if node.data.key < data.key {
+			parentNode = node
+			node = node.right
+		}
+	}
+	if node == nil {
+		return false, errors.New("data not exists.")
+	}
+	if node.right != nil && node.left != nil {
+		minNode := node.right
+		minNodeParent := node
+		for minNode.left != nil {
+			minNode = minNode.left
+			minNodeParent = minNode
+		}
+		node.data = minNode.data
+		node = minNode
+		parentNode = minNodeParent
+	}
+	var child *TreeNode
+	if node.left != nil {
+		child = node.left
+	} else if node.right != nil {
+		child = node.right
+	} else {
+		child = nil
+	}
+
+	if parentNode == nil {
+		bst.root = nil
+		return true, nil
+	} else if parentNode.left == node {
+		parentNode.left = child
+		return true, nil
+	} else if parentNode.right == node {
+		parentNode.right = child
+		return true, nil
+	}
+	return false, errors.New("Delete node failed.")
 }
 
 func (n *TreeNode) preOrder(result *[]Entry) {

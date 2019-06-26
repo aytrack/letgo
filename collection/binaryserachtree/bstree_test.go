@@ -20,8 +20,8 @@ func TestBSTree(t *testing.T) {
 	bst.InsertRecur(3, "a")
 	bst.InsertRecur(2, "b")
 	bst.InsertRecur(5, "c")
-	bst.Insert(1, "d")
-	bst.Insert(4, "e")
+	bst.InsertRecur(1, "d")
+	bst.InsertRecur(4, "e")
 
 	preExcept := []Entry{{3, "a"}, {2, "b"}, {1, "d"}, {5, "c"}, {4, "e"}}
 	inExcept := []Entry{{1, "d"}, {2, "b"}, {3, "a"}, {4, "e"}, {5, "c"}}
@@ -63,6 +63,11 @@ func TestBSTree(t *testing.T) {
 		t.Errorf("PostOrder is %v != %v", postOrderv, postExcept)
 	}
 
+	postOrderv = bst.PostOrder()
+	if !compareList(postExcept, postOrderv) {
+		t.Errorf("PostOrder is %v != %v", postOrderv, postExcept)
+	}
+
 	v2 := bst.Find(2)
 	if v2.key != 2 {
 		t.Errorf("Find v1 key is %v != 2", v2.key)
@@ -83,6 +88,34 @@ func TestBSTree(t *testing.T) {
 		t.Errorf("Max's key is %d != 5", max)
 	}
 
+	ok, _ := bst.Delete(&Entry{5, "c"})
+	inExcept = []Entry{{1, "d"}, {2, "b"}, {3, "a"}, {4, "e"}}
+	afterDelete := bst.InOrder()
+	if !ok || !compareList(inExcept, afterDelete) {
+		t.Errorf("After delete is %v != %v", afterDelete, inExcept)
+	}
+
+	bst.Insert(5, "c")
+	ok, _ = bst.Delete(&Entry{1, "d"})
+	inExcept = []Entry{{2, "b"}, {3, "a"}, {4, "e"}, {5, "c"}}
+	afterDelete = bst.InOrder()
+	if !ok || !compareList(inExcept, afterDelete) {
+		t.Errorf("After delete is %v != %v", afterDelete, inExcept)
+	}
+
+	bst.Insert(1, "d")
+	ok, _ = bst.Delete(&Entry{3, "a"})
+	inExcept = []Entry{{1, "d"}, {2, "b"}, {4, "e"}, {5, "c"}}
+	afterDelete = bst.InOrder()
+	if !ok || !compareList(inExcept, afterDelete) {
+		t.Errorf("After delete is %v != %v", afterDelete, inExcept)
+	}
+
+	bst1 := NewBSTree()
+	bst1.Insert(10, "aa")
+	if bst1.root.data.key != 10 {
+		t.Errorf("bst1 root key is %d != 10", bst1.root.data.key)
+	}
 }
 
 func compareList(l1, l2 []Entry) bool {
